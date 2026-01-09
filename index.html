@@ -273,6 +273,189 @@
           font-size: 0.9em;
         }
       }
+
+      /* Floating Search Button */
+      .floating-search-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s;
+        z-index: 1000;
+      }
+
+      .floating-search-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+      }
+
+      .floating-search-btn:active {
+        transform: scale(0.95);
+      }
+
+      /* Search Modal */
+      .search-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 2000;
+        animation: fadeIn 0.3s;
+      }
+
+      .search-modal.active {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: 80px;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .search-content {
+        background: white;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        animation: slideDown 0.3s;
+      }
+
+      @keyframes slideDown {
+        from {
+          transform: translateY(-50px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .search-header {
+        padding: 20px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 16px;
+        outline: none;
+        transition: border-color 0.3s;
+      }
+
+      .search-input:focus {
+        border-color: #667eea;
+      }
+
+      .search-results {
+        overflow-y: auto;
+        max-height: 50vh;
+      }
+
+      .search-item {
+        padding: 15px 20px;
+        cursor: pointer;
+        border-bottom: 1px solid #f3f4f6;
+        transition: all 0.2s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .search-item:hover {
+        background: #f9fafb;
+      }
+
+      .search-item:active {
+        background: #f3f4f6;
+      }
+
+      .search-item-name {
+        font-weight: 600;
+        color: #1f2937;
+      }
+
+      .search-item-grade {
+        font-size: 1.2em;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 6px;
+      }
+
+      .search-no-results {
+        padding: 30px 20px;
+        text-align: center;
+        color: #6b7280;
+      }
+
+      .search-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: none;
+        border: none;
+        font-size: 28px;
+        color: #6b7280;
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s;
+      }
+
+      .search-close:hover {
+        background: #f3f4f6;
+        color: #1f2937;
+      }
+
+      .student-card.highlight {
+        animation: highlightCard 1.5s;
+      }
+
+      @keyframes highlightCard {
+        0%,
+        100% {
+          transform: scale(1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        50% {
+          transform: scale(1.02);
+          box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+      }
+
+      .btn-clipboard {
+        background: #8b5cf6;
+        color: white;
+      }
     </style>
   </head>
   <body>
@@ -303,11 +486,10 @@
       </div>
 
       <div class="controls">
-        <button class="btn btn-reset" onclick="resetAll()">
-          🔄 Resetovat vše
-        </button>
-        <button class="btn btn-export" onclick="exportResults()">
-          📤 Export
+        <button class="btn btn-reset" onclick="resetAll()">🔄 Reset</button>
+        <button class="btn btn-export" onclick="exportResults()">📤 CSV</button>
+        <button class="btn btn-clipboard" onclick="exportToClipboard()">
+          📋 Schránka
         </button>
       </div>
 
@@ -333,6 +515,36 @@
             <div class="stat-label">Úspěšnost (≤3)</div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Floating Search Button -->
+    <button
+      class="floating-search-btn"
+      onclick="openSearch()"
+      title="Vyhledat studenta"
+    >
+      🔍
+    </button>
+
+    <!-- Search Modal -->
+    <div
+      class="search-modal"
+      id="searchModal"
+      onclick="closeSearchOnBackdrop(event)"
+    >
+      <div class="search-content" onclick="event.stopPropagation()">
+        <div class="search-header">
+          <input
+            type="text"
+            class="search-input"
+            id="searchInput"
+            placeholder="Zadejte jméno studenta..."
+            oninput="filterStudents()"
+            autofocus
+          />
+        </div>
+        <div class="search-results" id="searchResults"></div>
       </div>
     </div>
 
@@ -435,7 +647,9 @@
             const gradeInfo = calculateGrade(totalPoints);
 
             return `
-                    <div class="student-card">
+                    <div class="student-card" id="student-${students.indexOf(
+                      student
+                    )}">
                         <div class="student-header">
                             <div class="student-name">${student}</div>
                             <div class="grade-display ${gradeInfo.class}">${
@@ -604,6 +818,157 @@
         }.csv`;
         link.click();
       }
+
+      // Export to clipboard for WhatsApp
+      function exportToClipboard() {
+        let text = "📝 *Hodnocení testu*\n\n";
+
+        students.forEach((student) => {
+          const data = studentData[student];
+          const totalPoints = Object.values(data).reduce(
+            (sum, p) => sum + p,
+            0
+          );
+          const grade = calculateGrade(totalPoints).grade;
+
+          if (totalPoints > 0) {
+            text += `*${student}*: ${totalPoints.toFixed(
+              1
+            )}b → známka *${grade}*\n`;
+          }
+        });
+
+        // Add statistics
+        const allPoints = students.map((student) => {
+          return Object.values(studentData[student]).reduce(
+            (sum, p) => sum + p,
+            0
+          );
+        });
+
+        const completedCount = allPoints.filter((p) => p > 0).length;
+        const avgPoints =
+          completedCount > 0
+            ? (
+                allPoints.reduce((sum, p) => sum + p, 0) / completedCount
+              ).toFixed(2)
+            : 0;
+        const passCount = allPoints.filter((p) => p >= 2).length;
+        const passRate =
+          completedCount > 0
+            ? Math.round((passCount / completedCount) * 100)
+            : 0;
+
+        text += `\n📊 *Statistiky*\n`;
+        text += `Ohodnoceno: ${completedCount}/${students.length}\n`;
+        text += `Průměr: ${avgPoints}b\n`;
+        text += `Úspěšnost: ${passRate}%`;
+
+        navigator.clipboard.writeText(text).then(
+          () => {
+            alert("✅ Výsledky zkopírovány do schránky!");
+          },
+          (err) => {
+            alert("❌ Chyba při kopírování: " + err);
+          }
+        );
+      }
+
+      // Search functionality
+      function openSearch() {
+        const modal = document.getElementById("searchModal");
+        modal.classList.add("active");
+        document.getElementById("searchInput").value = "";
+        filterStudents();
+        // Focus input after a small delay to ensure modal is visible
+        setTimeout(() => {
+          document.getElementById("searchInput").focus();
+        }, 100);
+      }
+
+      function closeSearch() {
+        const modal = document.getElementById("searchModal");
+        modal.classList.remove("active");
+      }
+
+      function closeSearchOnBackdrop(event) {
+        if (event.target.id === "searchModal") {
+          closeSearch();
+        }
+      }
+
+      function filterStudents() {
+        const searchValue = document
+          .getElementById("searchInput")
+          .value.toLowerCase()
+          .trim();
+        const resultsContainer = document.getElementById("searchResults");
+
+        const filtered = students.filter((student) =>
+          student.toLowerCase().includes(searchValue)
+        );
+
+        if (filtered.length === 0) {
+          resultsContainer.innerHTML = `
+            <div class="search-no-results">
+              😔 Žádný student nenalezen
+            </div>
+          `;
+          return;
+        }
+
+        resultsContainer.innerHTML = filtered
+          .map((student) => {
+            const data = studentData[student];
+            const totalPoints = Object.values(data).reduce(
+              (sum, p) => sum + p,
+              0
+            );
+            const gradeInfo = calculateGrade(totalPoints);
+
+            return `
+              <div class="search-item" onclick="scrollToStudent('${student}')">
+                <span class="search-item-name">${student}</span>
+                <span class="search-item-grade ${gradeInfo.class}">${gradeInfo.grade}</span>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function scrollToStudent(studentName) {
+        const studentIndex = students.indexOf(studentName);
+        const studentCard = document.getElementById(`student-${studentIndex}`);
+
+        if (studentCard) {
+          closeSearch();
+
+          // Scroll to the card
+          studentCard.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+
+          // Add highlight animation
+          studentCard.classList.add("highlight");
+          setTimeout(() => {
+            studentCard.classList.remove("highlight");
+          }, 1500);
+        }
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener("keydown", (e) => {
+        // Ctrl/Cmd + F to open search
+        if ((e.ctrlKey || e.metaKey) && e.key === "f") {
+          e.preventDefault();
+          openSearch();
+        }
+        // Escape to close search
+        if (e.key === "Escape") {
+          closeSearch();
+        }
+      });
 
       // Initialize app
       loadData();
