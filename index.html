@@ -463,17 +463,17 @@
       <header>
         <h1>📝 Hodnocení testu</h1>
         <div class="test-info">
-          <strong>Úloha 1a:</strong> 1 bod • <strong>Úloha 1b:</strong> 1 bod •
-          <strong>Úloha 2b:</strong> 2 body
+          <strong>Úloha 1:</strong> 1 bod • <strong>Úloha 2:</strong> 2 body •
+          <strong>Úloha 3:</strong> 2 body
           <br />
-          <strong>Celkem:</strong> 4 body
+          <strong>Celkem:</strong> 5 bodů (na jedničku stačí 4, 1 bod je bonus)
         </div>
       </header>
 
       <div class="legend">
         <div class="legend-title">📊 Známkování:</div>
         <div class="legend-grid">
-          <div>4.0 b = 1</div>
+          <div>4.0 b a více = 1</div>
           <div>3.5 b = 1-</div>
           <div>3.0 b = 2</div>
           <div>2.5 b = 2-</div>
@@ -567,28 +567,25 @@
       ];
 
       const tasks = [
-        { id: "1a", label: "Úloha 1a", points: 1 },
-        { id: "1b", label: "Úloha 1b", points: 1 },
-        { id: "2b", label: "Úloha 2b", points: 2 },
+        { id: "1", label: "Úloha 1", points: 1 },
+        { id: "2", label: "Úloha 2", points: 2 },
+        { id: "3", label: "Úloha 3", points: 2 },
       ];
+
+      const maxTotal = tasks.reduce((sum, t) => sum + t.points, 0);
+      const gradeMax = 4; // na jedničku stačí 4 body, zbytek je bonus
 
       let studentData = {};
 
-      // Load data from localStorage
+      // Load data from localStorage (keeps only current students and tasks)
       function loadData() {
-        const saved = localStorage.getItem("testHodnoceni");
-        if (saved) {
-          studentData = JSON.parse(saved);
-        }
-        // Initialize empty data (also for students missing in saved data)
+        const saved = JSON.parse(localStorage.getItem("testHodnoceni") || "{}");
+        studentData = {};
         students.forEach((student) => {
-          if (!studentData[student]) {
-            studentData[student] = {
-              "1a": 0,
-              "1b": 0,
-              "2b": 0,
-            };
-          }
+          studentData[student] = {};
+          tasks.forEach((task) => {
+            studentData[student][task.id] = saved[student]?.[task.id] ?? 0;
+          });
         });
       }
 
@@ -671,7 +668,7 @@
                               .join("")}
                         </div>
                         <div class="points-display">
-                            ${totalPoints.toFixed(1)} / 4.0 bodů
+                            ${totalPoints.toFixed(1)} / ${gradeMax.toFixed(1)} bodů (+${maxTotal - gradeMax} bonus)
                         </div>
                     </div>
                 `;
@@ -782,11 +779,8 @@
       function resetAll() {
         if (confirm("Opravdu chcete resetovat všechna data?")) {
           students.forEach((student) => {
-            studentData[student] = {
-              "1a": 0,
-              "1b": 0,
-              "2b": 0,
-            };
+            studentData[student] = {};
+            tasks.forEach((task) => (studentData[student][task.id] = 0));
           });
           saveData();
           renderStudents();
@@ -795,7 +789,7 @@
 
       // Export results
       function exportResults() {
-        let csv = "Jméno,Úloha 1a,Úloha 1b,Úloha 2b,Celkem bodů,Známka\n";
+        let csv = `Jméno,${tasks.map((t) => t.label).join(",")},Celkem bodů,Známka\n`;
 
         students.forEach((student) => {
           const data = studentData[student];
@@ -805,9 +799,7 @@
           );
           const grade = calculateGrade(totalPoints).grade;
 
-          csv += `${student},${data["1a"]},${data["1b"]},${
-            data["2b"]
-          },${totalPoints.toFixed(1)},${grade}\n`;
+          csv += `${student},${tasks.map((t) => data[t.id]).join(",")},${totalPoints.toFixed(1)},${grade}\n`;
         });
 
         const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
