@@ -507,7 +507,7 @@
             <div class="stat-label">Průměrné body</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value" id="completed">0/15</div>
+            <div class="stat-value" id="completed">0/14</div>
             <div class="stat-label">Ohodnoceno</div>
           </div>
           <div class="stat-item">
@@ -550,21 +550,20 @@
 
     <script>
       const students = [
-        "Celarová Adéla",
-        "Dostál Kryštof",
-        "Dostál Ondřej",
-        "Drahošová Simona",
-        "Hejkal Dominik",
-        "Hitzger David",
-        "Hlaváč Tomáš",
-        "Jůzlová Natálie",
-        "Krajíček Daniel",
-        "Leszkowová Veronika",
-        "Miglec Ján",
-        "Pesler Matěj",
-        "Strašilová Barbora",
-        "Šotolová Eliška",
-        "Vrběcká Inka",
+        "Blažková Veronika",
+        "Hejhal Jakub",
+        "Jajtner Jan Nepomuk",
+        "Jansík Oliver",
+        "Kalinová Aneta",
+        "Klofáčová Kristýna",
+        "Kroftová Barbora",
+        "Loskot Štěpán",
+        "Musílková Lenka",
+        "Procházka Antonín",
+        "Smejkalová Barbora",
+        "Štefan Michal",
+        "Včela Petr",
+        "Wasserbauer Matyáš",
       ];
 
       const tasks = [
@@ -580,16 +579,17 @@
         const saved = localStorage.getItem("testHodnoceni");
         if (saved) {
           studentData = JSON.parse(saved);
-        } else {
-          // Initialize empty data
-          students.forEach((student) => {
+        }
+        // Initialize empty data (also for students missing in saved data)
+        students.forEach((student) => {
+          if (!studentData[student]) {
             studentData[student] = {
               "1a": 0,
               "1b": 0,
               "2b": 0,
             };
-          });
-        }
+          }
+        });
       }
 
       // Save data to localStorage
